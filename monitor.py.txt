@@ -1,0 +1,33 @@
+import psutil
+import time
+import pandas as pd
+
+def monitor_processes(log_file="process_log.csv", duration=60, interval=2):
+    """ Monitors system processes and logs CPU & memory usage """
+
+    data = []  # Store log data
+    print("🔄 Monitoring system processes...")
+
+    start_time = time.time()
+
+    while time.time() - start_time < duration:
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")  # Get current timestamp
+        cpu_usage = psutil.cpu_percent(interval=1)  # Get CPU usage in %
+        memory_usage = psutil.virtual_memory().percent  # Get memory usage in %
+        disk_usage = psutil.disk_usage('/').percent  # Get disk usage in %
+
+        # Store in a list
+        data.append([timestamp, cpu_usage, memory_usage, disk_usage])
+
+        # Print real-time updates
+        print(f"[{timestamp}] CPU: {cpu_usage}%, Memory: {memory_usage}%, Disk: {disk_usage}%")
+
+        time.sleep(interval)  # Wait before next capture
+
+    # Convert to DataFrame and save as CSV
+    df = pd.DataFrame(data, columns=["Timestamp", "CPU_Usage", "Memory_Usage", "Disk_Usage"])
+    df.to_csv(log_file, index=False)
+    print(f"\n✅ Monitoring completed. Data saved to '{log_file}'.")
+
+if __name__ == "__main__":
+    monitor_processes()

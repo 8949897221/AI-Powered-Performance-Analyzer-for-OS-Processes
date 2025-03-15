@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
+
+# Load dataset
+df = pd.read_csv("process_log.csv")
+
+# Convert timestamp to numerical feature (optional)
+df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+df['Seconds'] = (df['Timestamp'] - df['Timestamp'].min()).dt.total_seconds()
+
+# Select features and target variable
+X = df[['Seconds', 'CPU_Usage', 'Memory_Usage']]  # Input features
+y = df['Disk_Usage']  # Target (predicting disk usage as example)
+
+# Split into training & testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the model
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Predict on test data
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+mae = mean_absolute_error(y_test, y_pred)
+print(f"✅ Model trained successfully! MAE: {mae:.2f}")
+
+# Visualize predictions vs actual values
+plt.figure(figsize=(8, 5))
+sns.scatterplot(x=y_test, y=y_pred, color="blue", alpha=0.6)
+plt.xlabel("Actual Disk Usage (%)")
+plt.ylabel("Predicted Disk Usage (%)")
+plt.title("AI Model Predictions vs Actual Usage")
+plt.show()
+import joblib
+
+# Save the trained model
+joblib.dump(model, "performance_model.pkl")
+print("✅ Model saved as 'performance_model.pkl'")

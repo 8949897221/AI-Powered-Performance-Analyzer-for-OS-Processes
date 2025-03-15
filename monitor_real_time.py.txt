@@ -1,0 +1,59 @@
+import pandas as pd
+import psutil
+import time
+import joblib
+import numpy as np
+
+# Load the trained model
+model = joblib.load("performance_model.pkl")
+
+# Define thresholds for anomaly detection
+CPU_THRESHOLD = 80.0  # Alert if CPU usage exceeds 80%
+MEMORY_THRESHOLD = 85.0
+DISK_THRESHOLD = 90.0
+
+def detect_anomalies(cpu, memory, disk):
+    """Detect anomalies and suggest optimizations."""
+    issues = []
+
+    if cpu > CPU_THRESHOLD:
+        issues.append("⚠️ High CPU usage detected! Consider closing heavy applications.")
+    if memory > MEMORY_THRESHOLD:
+        issues.append("⚠️ High memory usage detected! Consider clearing unused apps.")
+    if disk > DISK_THRESHOLD:
+        issues.append("⚠️ High disk usage detected! Check background processes.")
+
+    return issues
+
+def monitor_real_time(duration=60, interval=2):
+    """ Monitors system processes and predicts future usage """
+    print("🔄 Real-time Monitoring & AI Predictions...")
+
+    start_time = time.time()
+
+    while time.time() - start_time < duration:
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        cpu_usage = psutil.cpu_percent(interval=1)
+        memory_usage = psutil.virtual_memory().percent
+        disk_usage = psutil.disk_usage('/').percent
+
+        # Predict future disk usage
+        features = np.array([[time.time() - start_time, cpu_usage, memory_usage]])
+        predicted_disk = model.predict(features)[0]
+
+        # Detect anomalies
+        anomalies = detect_anomalies(cpu_usage, memory_usage, predicted_disk)
+
+        # Print real-time status
+        print(f"[{timestamp}] CPU: {cpu_usage}%, Memory: {memory_usage}%, Predicted Disk: {predicted_disk:.2f}%")
+
+        if anomalies:
+            for issue in anomalies:
+                print(issue)
+
+        time.sleep(interval)
+
+    print("\n✅ Monitoring Completed.")
+
+if __name__ == "__main__":
+    monitor_real_time()
