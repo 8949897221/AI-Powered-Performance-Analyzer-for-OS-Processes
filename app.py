@@ -135,4 +135,4 @@ elif page == "ℹ️ System Info":
         st.write(f"**{key}:** {value}")
 
 # --- Footer ---
-st.markdown("<p style='text-align: center;'>OS Performance Analyzer • Version 2.0</p>", unsafe_allow_html=True)
+
